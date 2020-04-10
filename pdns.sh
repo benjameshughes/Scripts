@@ -3,10 +3,23 @@
 # Original script rom https://hacksncloud.com/2020/01/02/how-to-install-powerdns-and-powerdns-admin-on-debian-buster-updated/
 # I added a random password generator. The script then inserts the generated passwords into the .sql files for us in the myself installation
 
-# Ask user for the hostname
-echo What is the hostname or IP?
+echo "=============================================="
+echo "PowerDNS Installer Script"
+echo "Original script from: https://hacksncloud.com"
+echo "Changed to fit my needs"
+echo "Ben Hughes https://github.com/benjameshughes"
+echo "=============================================="
 
-read varHostname
+# Ask user for the hostname
+echo "Is this the correct IP, yes or no (y/n)?"
+ip="$(hostname -I)"
+echo $ip
+read -e ipcorrect
+if [[ ! $ipcorrect =~ ^[Nn]$ ]]
+then
+echo "Please enter the correct IP Address"
+read -e ip
+else
 
 # Update distro
 apt update -y
@@ -15,7 +28,7 @@ apt update -y
 apt dist-upgrade -y
 
 # Install needed packages and dependancies
-apt install -y pwgen unzip wget software-properties-common dirmngr
+apt install -y pwgen unzip wget software-properties-common dirmngr expect
 apt install -y git python-pip
 
 # SQL Password variables for installation
@@ -32,7 +45,7 @@ unzip pdns-buster-updated.zip
 # Edit files
 sed -i "s/mypassword/$pass1/g" "/tmp/pdns/sql01.sql"
 sed -i "s/mypassword/$pass2/g" "/tmp/pdns/sql01.sql"
-sed -i "s/pdns.example.com/$varHostname/g" "/tmp/pdns/powerdns-admin.conf"
+sed -i "s/pdns.example.com/$ip/g" "/tmp/pdns/powerdns-admin.conf"
 sed -i "s/mypassword/$pass1/g" "/tmp/pdns/pdns.local.gmysql.conf"
 
 # Echos passwords
@@ -56,7 +69,25 @@ apt-get update && apt-get -y install mariadb-server
 
 # run the secure script to set root password, remove test database and disable remote root user login, you can safely accept the defaults and provide an strong root password when prompted
 mysql_secure_installation
-mysql -u root -p $pass1 < ${MY_PATH}/sql01.sql # provide previously set password
+# mysql -u root -p  < ${MY_PATH}/sql01.sql # provide previously set password
+# Top answer from https://serverfault.com/questions/783527/non-interactive-silent-install-of-mysql-5-7-on-ubuntu-16-04-lts
+spawn $(which mysql_secure_installation)
+expect "Enter password for user root:"
+send "$pass1\r"
+expect "Press y|Y for Yes, any other key for No:"
+send "y\r"
+expect "Please enter 0 = LOW, 1 = MEDIUM and 2 = STRONG:"
+send "2\r"
+expect "Change the password for root ? ((Press y|Y for Yes, any other key for No) :"
+send "n\r"
+expect "Remove anonymous users? (Press y|Y for Yes, any other key for No) :"
+send "y\r"
+expect "Disallow root login remotely? (Press y|Y for Yes, any other key for No) :"
+send "y\r"
+expect "Remove test database and access to it? (Press y|Y for Yes, any other key for No) :"
+send "y\r"
+expect "Reload privilege tables now? (Press y|Y for Yes, any other key for No) :"
+send "y\r"
 
 # install powerdns and configure db parameters
 apt-get -y install pdns-server pdns-backend-mysql
@@ -123,3 +154,5 @@ rm -rf /tmp/*
 # log in
 # configure api access on powerdns-admin
 # enjoy
+# End of the above if statement
+fi
