@@ -3,6 +3,11 @@
 # Original script rom https://hacksncloud.com/2020/01/02/how-to-install-powerdns-and-powerdns-admin-on-debian-buster-updated/
 # I added a random password generator. The script then inserts the generated passwords into the .sql files for us in the myself installation
 
+# Ask user for the hostname
+echo What is the hostname or IP?
+
+read varHostname
+
 # Update distro
 apt update -y
 
@@ -28,6 +33,7 @@ unzip pdns-buster-updated.zip
 sed -i "s/mypassword/$pass1/g" "/tmp/pdns/sql01.sql"
 sed -i "s/mypassword/$pass2/g" "/tmp/pdns/sql01.sql"
 sed -i "s/pdns.example.com/$varHostname/g" "/tmp/pdns/powerdns-admin.conf"
+sed -i "s/mypassword/$pass1/g" "/tmp/pdns/pdns.local.gmysql.conf"
 
 # Echos passwords
 echo "First password:" $pass1
@@ -55,7 +61,8 @@ mysql -u root -p $pass1 < ${MY_PATH}/sql01.sql # provide previously set password
 # install powerdns and configure db parameters
 apt-get -y install pdns-server pdns-backend-mysql
 cp ${MY_PATH}/pdns.local.gmysql.conf /etc/powerdns/pdns.d/
-vi /etc/powerdns/pdns.d/pdns.local.gmysql.conf # db configuration
+# added a sed command for this, less interaction
+# vi /etc/powerdns/pdns.d/pdns.local.gmysql.conf # db configuration
 
 # install dnsutils for testing, curl and finally PowerDNS-Admin
 apt-get -y install python3-dev dnsutils curl
