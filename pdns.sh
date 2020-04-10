@@ -1,42 +1,42 @@
 #!/bin/bash
 
-# Password variables for installation
-# From top answer https://stackoverflow.com/questions/40326158/generate-password-in-bash-store-in-variable
+# Original script rom https://hacksncloud.com/2020/01/02/how-to-install-powerdns-and-powerdns-admin-on-debian-buster-updated/
+# I added a random password generator. The script then inserts the generated passwords into the .sql files for us in the myself installation
 
-$ pass1=$(</dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12)
-$ pass2=$(</dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12)
+# Update distro
+apt update -y
 
-# I added the follow to grab the files needed and make changes to the files
+#Distro upgrade
+apt dist-upgrade -y
 
+# Install needed packages and dependancies
+apt install -y pwgen unzip wget software-properties-common dirmngr
+apt install -y git python-pip
+
+# SQL Password variables for installation
+pass1=$(pwgen -Bs 10 1)
+pass2=$(pwgen -Bs 10 1)
+
+# Change to /tmp and downloaded the needed files
 cd /tmp
-
 wget https://hacksncloud.com/wp-content/uploads/2020/01/pdns-buster-updated.zip
 
-# Install unzip, just in case
-
-apt install unzip -y
-
-# Unzip package above
-
+# Extract zip file
 unzip pdns-buster-updated.zip
 
 # Change to directory
-
 cd pdns
 
 # Edit files
-
 sed -i "s /mypassword/$pass1/g" sql01.sql
 sed -i "s /mypassword/$pass2/g" sql01.sql
 
 # Echos passwords
-
 echo "First password:" $pass1
 echo "Second password:" $pass2
 
+# Allows the user to make a note of the generated password as they will be deleted later
 read -p "Please copy these passwords for the second part of the installation. Once done press [ENTER] to continue."
-
-# From https://hacksncloud.com/2020/01/02/how-to-install-powerdns-and-powerdns-admin-on-debian-buster-updated/
 
 # get script absolute path
 MY_PATH="`dirname \"$0\"`"
@@ -45,11 +45,6 @@ if [ -z "$MY_PATH" ] ; then
 	  exit 1
 fi
 
-# upgrade system and install dependencies
-apt-get update && apt-get -y upgrade
-apt-get -y install software-properties-common dirmngr
-apt-get -y install git python-pip
-
 # install and prepare last stable mariadb version
 apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
 add-apt-repository 'deb [arch=amd64] http://mariadb.mirror.liquidtelecom.com/repo/10.4/debian buster main'
@@ -57,7 +52,7 @@ apt-get update && apt-get -y install mariadb-server
 
 # run the secure script to set root password, remove test database and disable remote root user login, you can safely accept the defaults and provide an strong root password when prompted
 mysql_secure_installation
-mysql -u root -p < ${MY_PATH}/sql01.sql # provide previously set password
+mysql -u root -p $pass1 < ${MY_PATH}/sql01.sql # provide previously set password
 
 # install powerdns and configure db parameters
 apt-get -y install pdns-server pdns-backend-mysql
