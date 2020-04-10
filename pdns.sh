@@ -24,12 +24,10 @@ wget https://hacksncloud.com/wp-content/uploads/2020/01/pdns-buster-updated.zip
 # Extract zip file
 unzip pdns-buster-updated.zip
 
-# Change to directory
-cd pdns
-
 # Edit files
-sed -i "s /mypassword/$pass1/g" sql01.sql
-sed -i "s /mypassword/$pass2/g" sql01.sql
+sed -i "s/mypassword/$pass1/g" "/tmp/pdns/sql01.sql"
+sed -i "s/mypassword/$pass2/g" "/tmp/pdns/sql01.sql"
+sed -i "s/pdns.example.com/$varHostname/g" "/tmp/pdns/powerdns-admin.conf"
 
 # Echos passwords
 echo "First password:" $pass1
@@ -108,6 +106,11 @@ echo 'webserver-allow-from=0.0.0.0/0,::/0' >> /etc/powerdns/pdns.conf
 echo 'webserver-port=8081' >> /etc/powerdns/pdns.conf
 
 service pdns restart
+
+# Remove all files
+
+rm pdns.sh
+rm -rf /tmp/*
 
 # now go to server_name url and create a firt user account that will be admin
 # log in
