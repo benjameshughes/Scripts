@@ -31,8 +31,8 @@ sed -i "s /mypassword/$pass2/g" sql01.sql
 
 # Echos passwords
 
-echo "First password: $ echo $pass1"
-echo "Second password: $ echo $pass2"
+echo "First password: $pass1"
+echo "Second password: $pass2"
 
 read -p "Please copy these passwords for the second part of the installation. Once done press [ENTER] to continue."
 
