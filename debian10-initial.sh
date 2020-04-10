@@ -17,7 +17,7 @@ cp /etc/ssh/sshd_config /etc/ssh/sshd_config.old
 
 cd /tmp
 
-wget 
+wget https://raw.githubusercontent.com/benjameshughes/Scripts/master/templates/ssh/sshd_config
 
 mv sshd_config /etc/ssh/sshd_config
 
