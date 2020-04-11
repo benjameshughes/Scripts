@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Colours
-green=\e[1;02m
+green="\e[1;02m"
 
 echo -e "========================================" "$green"
 echo -e "Debian System Maintenance Script" "$green"
