@@ -3,21 +3,23 @@ version: '3.8'
 services: 
     plex:
         image: plexinc/pms-docker
-        container_name: plex
+        container_name: Plex Media Server
         network_mode: host
         volumes: 
             - /data/config:/config
             - /data/transcode:/transcode
             - /data/media:/media
         restart: unless-stopped
-        environment: 
+        environment:
+            - PID=1000
+            - GID=1000
             - TZ=Europe/London
             - PLEX_CLAIM=claim-494xXhazvGYfRbz17bRG
         ports: 
             - 32400:443
     sonarr:
         image: linuxserver/sonarr
-        container_name: sonarr
+        container_name: Sonarr Server
         volumes:
             - /data/config:/config
             - /media/tv:/tv
@@ -26,31 +28,38 @@ services:
             - 8989:8989
         restart: unless-stopped
         environment: 
+            - PID=1000
+            - GID=1000
             - TZ=Europe/London
         depends_on: 
             - plex
     radarr:
         image: linuxserver/radarr
-        container_name: radarr
+        container_name: Radarr Server
         volumes:
             - /data/config:/config
             - /data/downloads:/downloads
         ports:
-            - "7979:7979"
+            - 7878:7878
         restart: unless-stopped
         environment: 
+            - PID=1000
+            - GID=1000
             - TZ=Europe/London
         depends_on: 
             - plex
             - sonarr
     jackett:
         image: linuxserver/jackett
-        container_name: jackett
+        container_name: Jackett Server
         volumes:
             - /data/config:/config
         ports:
             - 9117:9117
         restart: unless-stopped
+        environment: 
+            - PID=1000
+            - GID=1000
         depends_on: 
             - plex
             - sonarr
